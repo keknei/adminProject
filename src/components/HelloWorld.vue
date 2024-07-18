@@ -41,11 +41,10 @@ const count = ref(0)
 }
 
 .box {
-  border-radius: 5px;
   width: auto;
   height: auto;
   font-size: large;
   background-color: #fff;
-  
+  border-radius: 5px;
 }
 </style>
