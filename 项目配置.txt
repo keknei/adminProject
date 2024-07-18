@@ -1,0 +1,285 @@
+### eslint配置 javascript代码检测语法工具，包含js语法以及少部分格式问题
+
+npm init @eslint/config@latest
+vue3+ts项目
+选择选项之后会生成一个eslint.config.js文件
+
+eslint.config.js
+import globals from "globals"
+import pluginJs from "@eslint/js"
+import tseslint from "typescript-eslint"
+import pluginVue from "eslint-plugin-vue"
+
+export default [
+  // 手动添加ignore属性
+  {
+    ignores: [
+      "config/*",
+      ".husky",
+      ".local",
+      "public/*",
+      ".vscode",
+      "node_modules",
+      "*.md",
+      "idea",
+      "dist"
+    ]
+  },
+  { files: ["**/*.{js,mjs,cjs,ts,vue}"] },
+  {
+    languageOptions: { 
+      globals: {...globals.browser, ...globals.node},
+      parserOptions: {
+        parser: tseslint.parser // 在vue文件上使用ts解析器
+      }
+    }
+  },
+  // eslint 默认推荐规则
+  pluginJs.configs.recommended,
+  // tseslint 默认推荐规则
+  ...tseslint.configs.recommended,
+  // vue3 默认基本规则
+  ...pluginVue.configs["flat/essential"],
+]
+
+vscode添加 Vue - Official 插件，运用ts+vue规则
+Vetur 是 Vue 的官方插件，它提供了 Vue2 语法高亮、自动补全、格式化等功能。
+
+package.json 添加脚本命令
+"scripts": {
+  "lint": "eslint src", // 检测
+  "fix": "eslint src --fix" // 修复
+}
+
+### prettier配置 属于格式化工具检测格式
+
+1. npm install --save-dev --save-exact prettier
+
+2. 创建一个 prettier.config.js 文件并添加以下内容：
+export default {
+  printWidth: 100, // 一行最多多少字符
+  tabWidth: 2, // 缩进的宽度，2 个空格
+  singleQuote: false, // 用单引号
+  useTabs: false, // 是否使用制表符，不使用制表符，使用空格
+  semi: false, // 语句结尾是否使用分号
+  bracketSpacing: true, // 大括号 {} 中开始和结束是否要空格，true — { foo: 1 }，false — {foo: 1}
+  trailingComma: "none", // 数组或对象或参数的最后一项是否尾随逗号，none — 没有尾随逗号，all — 尽可能使用尾随逗号，es5 — 在 ES5 中有效的尾随逗号（对象、数组等），TypeScript 和 Flow 类型参数中的尾随逗号。
+  arrowParens: "always", // 只有一个参数的箭头函数是否带括号，always — 始终带括号，avoid — 不带括号
+  proseWrap: "always", // 什么对代码进行折行，always — 如果超过 printWidth 指定的一行最多字符宽度，则进行折行；never — 将每块代码块展开成一行；preserve — 什么都不做，保持原样。
+  htmlWhitespaceSensitivity: "ignore", // "ignore" - 空格被认为是不敏感的  "strict" - 空格被认为是敏感的   "css" - 遵守CSS显示属性的默认值
+  endOfLine: "auto", // 每行的结束符（回车符、换行符），取值请参考 https://www.prettier.cn/docs/options.html#end-of-line
+  // 每个文件格式化的范围是文件的全部内容
+  rangeStart: 0,
+  rangeEnd: Infinity,
+  // 不需要写文件开头的@prettier
+  requirePragma: false,
+  // 不需要自动在文件开头插入@prettier
+  insertPragma: false
+}
+
+
+3. 创建一个 .prettierignore 忽略文件
+dist
+.local
+.output.js
+node_modules
+**/*.svg
+**/*.sh
+public
+.npmrc
+
+4. 添加eslint配置继承规则
+
+npm install eslint-config-prettier eslint-plugin-prettier --save-dev
+eslint-plugin-prettier 将Prettier作为ESLint规则运行，并将差异报告为单独的 ESLint 问题
+
+在eslint.config.js中添加
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+
+export default [
+  ...
+  //关闭所有不必要的或可能与Prettier冲突的规则
+  eslintPluginPrettierRecommended
+]
+
+5. package.json 添加脚本命令
+"scripts": {
+  "format": "prettier --write . src"
+}
+
+6. 在vite.config.ts中添加eslint插件
+
+import vue from "@vitejs/plugin-vue"
+import eslint from "vite-plugin-eslint"
+export default defineConfig({
+  plugins: [vue(), eslint()]
+})
+
+### 集成sass配置
+1. npm install sass
+
+2. 在src/styles/index.scss中添加全局变量
+
+3. 在vite.config.ts中添加sass配置
+
+export default defineConfig({
+  ...,
+  css: {
+    // css 预处理器配置选项
+    preprocessorOptions: {
+      // sass 预处理器
+      scss: {
+        javascriptEnabled: true,
+        // 将用于声明全局 sass 变量的文件导入到每个 Vue 文件中的 style 样式模块中
+        additionalData: `@import "src/styles/index.scss";`
+      }
+    }
+  }
+})
+
+4. 在vue中用scss
+<style lang="scss" scoped>
+.home {
+  color: $baseColor;
+}
+</style>
+
+### stylelint配置 检测css语法
+1. npm install --save-dev stylelint stylelint-config-standard
+
+如果用scss，还需要下载以下的依赖包
+stylelint-config-standard-scss:  Stylelint 中标准的适合 scss 的配置
+stylelint-scss:  用于支持校验scss语法的插件
+stylelint-config-standard-vue:  Stylelint 中标准的适合 vue 的配置
+stylelint-config-recommended-scss:  Stylelint 中推荐的适合 scss 的配置
+stylelint-config-recommended-vue:  Stylelint 中推荐的适合 vue 的配置
+stylelint-config-recess-order:  用于规范样式属性写作顺序的插件
+stylelint-order: 用于支持校验scss排序相关的插件
+postcss-scss:  PostCSS 的 scss 语法解析器，让 PostCSS 能够转换 sass 源码和 css
+postcss-html:  用于解析 HTML 的 PostCSS 语法解析器
+stylelint-config-html:  支持其他类型文件（HTML, XML, Vue, Svelte, Astro, PHP ）的解析,不添加这个插件，就不能正常解析其他非css文件（报错）,捆绑安装postcss-html
+
+2. 在项目的根目录中创建 stylelint.config.js 配置文件，并写入以下内容：
+export default {
+  extends: [
+    "stylelint-config-standard", // 继承 Stylelint 中标准的配置
+    "stylelint-config-html/vue", // 配置 vue 中 template 样式格式化
+    "stylelint-config-recommended-vue/scss", // 继承 Stylelint 中推荐的适合于 vue 中 scss 样式格式化的配置
+    "stylelint-config-standard-scss", // 继承 Stylelint 中标准的适合 scss 的配置
+    "stylelint-config-standard-vue", // 继承 Stylelint 中标准的适合 vue 的配置
+    "stylelint-config-recommended-scss", // 继承 Stylelint 中推荐的适合 scss 的配置
+    "stylelint-config-recess-order" // 继承 Stylelint 中以 recess 的方式对 CSS 属性进行排序的配置
+  ],
+  // 插件是由社区创建的规则或规则集 按照规则对CSS属性进行排序
+  plugins: [
+    // 执行各种各样的 SCSS语法特性检测规则(插件包)
+    "stylelint-scss",
+    // 指定排序，比如声明的块内(插件包)属性的顺序
+    "stylelint-order"
+  ],
+  overrides: [
+    {
+      // 使用 PostCSS 的 scss 语法解析器解析匹配文件中的样式代码
+      files: ["**/*.(scss|css|vue|html)"],
+      customSyntax: "postcss-scss"
+    },
+    {
+      // 使用 PostCSS 的 html 语法解析器解析匹配文件中的代码
+      files: ["**/*.(html|vue)"],
+      customSyntax: "postcss-html"
+    }
+  ],
+  // 配置不需要 Stylelint 检查的文件类型
+  ignoreFiles: ["**/*.js", "**/*.jsx", "**/*.tsx", "**/*.ts", "**/*.json", "**/*.md", "**/*.yaml"],
+  rules: {
+    "selector-id-pattern": null,
+    "selector-class-pattern": null,
+    "keyframes-name-pattern": null,
+    "scss/at-mixin-pattern": null,
+    "scss/dollar-variable-pattern": null,
+    "scss/percent-placeholder-pattern": null,
+    "color-function-notation": "legacy",
+    "alpha-value-notation": "number",
+    "selector-pseudo-class-no-unknown": [
+      // 不允许未知的选择器
+      true,
+      {
+        ignorePseudoClasses: ["global", "v-deep", "deep"] // 忽略属性，修改element默认样式的时候能使用到
+      }
+    ]
+  }
+}
+3. 创建一个 .stylelintignore 忽略文件，并添加如下内容：
+dist
+public
+node_modules
+
+4. 在package.json 文件中添加一个脚本来运行 Stylelint：
+{
+  "scripts": {
+    "lint:css": "stylelint 'src/**/*.{css,scss,vue}' --fix"
+  }
+}
+
+5. 在vite.config.ts中添加stylelint插件，可以在项目运行中检查scss或者css
+import stylelint from "vite-plugin-stylelint"
+export default defineConfig({
+  plugins: [
+    vue(),
+    stylelint({
+      fix: true // 自动修复 
+    })
+  ]
+})
+
+### husky git提交前校验代码格式化、静态检查等，有助于保持代码库的质量和一致性
+1. npm install husky --save-dev
+
+2. npx husky init
+会生成一个.husky文件夹，里面有pre-commit文件，里面有命令，可以自定义git提交前的校验,并更新package.json文件中scripts的脚本命令
+"scripts": {
+  ...,
+  "prepare": "husky"
+}
+
+3. 安装lint-staged 
+是一个在 git add 到暂存区的文件运行 linters (ESLint/Prettier/StyleLint) 的工具，避免在 git commit 提交时在整个项目执行
+lint-staged 可以让你当前的代码检查 只检查本次修改更新的代码，并在出现错误的时候，自动修复并且推送
+
+npm install lint-staged --save-dev
+
+4. 在package.json文件中添加lint-staged配置
+"lint-staged": {
+  "*.{js,ts,vue}": [
+    "eslint --fix",
+    "prettier --write"
+  ],
+  "*.{cjs,json}": [
+    "prettier --write"
+  ],
+  "*.{vue,html}": [
+    "eslint --fix",
+    "prettier --write",
+    "stylelint --fix"
+  ],
+  "*.{scss,css}": [
+      "stylelint --fix --allow-empty-input",
+    "prettier --write"
+  ],
+  "*.md": [
+    "prettier --write"
+  ]
+}
+
+5. 在package.json 的 scripts 添加 lint-staged 指令:
+"scripts": {
+  ...,
+  "lint:lint-staged": "lint-staged"
+}
+
+6. 根目录 .husky目录下pre-commit文件中的 npm 修改为：
+npm run lint:lint-staged
+
+7. 提交代码时，会自动执行lint-staged指令，检查代码格式和静态检查
+git add .
+git commit -m "test husky lint-staged"
