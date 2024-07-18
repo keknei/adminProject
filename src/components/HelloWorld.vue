@@ -41,6 +41,7 @@ const count = ref(0)
 
 .box {
   border-radius: 5px;
+  padding: 10px;
   width: auto;
   height: auto;
   font-size: large;
