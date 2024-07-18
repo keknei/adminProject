@@ -43,6 +43,7 @@ const count = ref(0)
 .box {
   width: auto;
   height: auto;
+  padding: 10px;
   font-size: large;
   background-color: #fff;
   border-radius: 5px;
