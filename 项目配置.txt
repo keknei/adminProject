@@ -277,7 +277,7 @@ npm install lint-staged --save-dev
   "lint:lint-staged": "lint-staged"
 }
 
-6. 根目录 .husky目录下pre-commit文件中的 npm 修改为：
+6. 根目录 .husky目录下pre-commit文件中的 npm 修改为(前提必须得已经git init或者git clone本地仓库与远程仓库关联，，否则不会走husky，因为husky需要git)：
 npm run lint:lint-staged
 
 7. 提交代码时，会自动执行lint-staged指令，检查代码格式和静态检查
