@@ -46,5 +46,6 @@ const count = ref(0)
   height: auto;
   font-size: large;
   background-color: #fff;
+  
 }
 </style>
