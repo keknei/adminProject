@@ -9,8 +9,7 @@ Learn more about the recommended Project Setup and IDE Support in the
 
 ## 项目规范配置
 
-eslint (校验js语法)
-
+- eslint (校验js语法)
 - prettier (校验vue\html\js格式)
 - stylelint (校验css\scss\lese格式)
 - husky (git commit提交前钩子，修复语法错误)

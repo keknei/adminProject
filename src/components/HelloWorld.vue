@@ -1,7 +1,6 @@
-<script setup lang="ts">
-import { ref } from "vue"
-const a = "hello world"
-console.log(a)
+<script setup lang="ts" name="HelloWorld">
+// import { ref } from "vue"
+console.log(import.meta)
 
 defineProps<{ msg: string }>()
 
@@ -10,7 +9,7 @@ const count = ref(0)
 
 <template>
   <h1>{{ msg }}</h1>
-
+  <svgIcon name="caret_down" />
   <div class="card">
     <button type="button" @click="count++">count is {{ count }}</button>
     <p>
@@ -37,7 +36,7 @@ const count = ref(0)
 
 <style lang="scss" scoped>
 .read-the-docs {
-  color: #888;
+  color: $baseColor;
 }
 
 .box {
