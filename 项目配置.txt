@@ -404,6 +404,25 @@ export default defineConfig({
   base: "/" //开发或生产环境服务的公共基础路径
 })
 
+### serve 本地服务端口、代理等配置
+export default defineConfig({
+  ...,
+  server: {
+    open: true, // 是否自动在浏览器打开
+    https: false, // 是否开启 https
+    host: "0.0.0.0", // 打开浏览器后是localhost地址，不是ip地址
+    port: 1011,//端口
+    proxy: {
+      // 以 /api 开头的请求，全部转发到 target 设置的地址
+      "/api": {
+        target: "http://192.168.169.242:7125/", //代理地址
+        changeOrigin: true, // 是否修改请求头中的host头为target地址域名
+        rewrite: (path) => path.replace(/^\/api/, "")
+      }
+    }
+  }
+})
+
 ### env配置环境变量
 vite项目中可以使用import.meta.env来获取环境变量，但是在vite.config.ts中无法访问，其中的默认变量有:
 import.meta.env.MODE  {string} 应用运行的模式。

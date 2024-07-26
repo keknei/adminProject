@@ -15,4 +15,4 @@ Learn more about the recommended Project Setup and IDE Support in the
 - husky (git commit提交前钩子，修复语法错误)
 - lint-staged (可以修复css\scss\lese\js\ts\html\vue等语法错误格式)
 - commitlint (统一标准规范提交代码)
-- 强制使用统一npm包管理器工具，不让用别的包管理工具
+- only-allow 强制使用统一npm包管理器工具，不让用别的包管理工具

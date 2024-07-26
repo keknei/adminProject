@@ -64,5 +64,19 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(__dirname, "./src")
       }
     }
+    // server: {
+    //   open: true, // 是否自动在浏览器打开
+    //   https: false, // 是否开启 https
+    //   //host: "0.0.0.0", // 打开浏览器后是localhost地址，不是ip地址
+    //   //port: 1011,//端口
+    //   proxy: {
+    //     "/sms-business-web": {
+    //       target: "http://xxxxxxxxxxxxx/",
+    //       target: "http://192.168.169.242:7125/",
+    //       changeOrigin: true,
+    //       rewrite: (path) => path.replace(/^\/wecom-business-web/, "")
+    //     }
+    //   }
+    // }
   }
 })
