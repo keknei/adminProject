@@ -15,11 +15,7 @@
     "preinstall": "npx only-allow npm"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
-    "axios": "^1.7.2",
-    "element-plus": "^2.7.7",
-    "nprogress": "^0.2.0",
-    "pinia": "^2.1.7",
+    "@rushstack/eslint-patch": "^1.10.3",
     "sass": "^1.77.8",
     "vue": "^3.4.29",
     "vue-router": "^4.4.0"
@@ -37,8 +33,6 @@
     "globals": "^15.8.0",
     "husky": "^9.1.0",
     "lint-staged": "^15.2.7",
-    "mockjs": "^1.1.0",
-    "only-allow": "^1.2.1",
     "postcss-html": "^1.7.0",
     "postcss-scss": "^4.0.9",
     "prettier": "3.3.3",

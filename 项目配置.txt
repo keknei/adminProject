@@ -586,11 +586,14 @@ const autoImportGlobals = JSON.parse(
   }
 }
 
+<<<<<<< HEAD
 5. 在tsconfig.app.json文件中的include属性中添加配置auto-imports.d.ts文件,注意名字别写错了
 {
   "include": [..., "auto-imports.d.ts"]
 }
 
+=======
+>>>>>>> 30cf2ed9abcc34ad40dcf66e9547143714bf6b5e
 ### SVG图标配置
 1. npm install vite-plugin-svg-icons -D
 
