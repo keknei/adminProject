@@ -40,6 +40,13 @@ export default [
   ...tseslint.configs.recommended,
   // vue3 默认基本规则
   ...pluginVue.configs["flat/essential"],
+  //在rules中添加自定义规则
+  {
+    // 关闭组件命名规则
+    rules: {
+      "vue/multi-word-component-names": "off"
+    }
+  }
 ]
 
 vscode添加 Vue - Official 插件，运用ts+vue规则
@@ -131,7 +138,7 @@ export default defineConfig({
       scss: {
         javascriptEnabled: true,
         // 将用于声明全局 sass 变量的文件导入到每个 Vue 文件中的 style 样式模块中
-        additionalData: `@import "src/styles/index.scss";`
+        additionalData: `@import "src/assets/styles/app.scss";`
       }
     }
   }
@@ -217,7 +224,7 @@ node_modules
 4. 在package.json 文件中添加一个脚本来运行 Stylelint：
 {
   "scripts": {
-    "lint:css": "stylelint 'src/**/*.{css,scss,vue}' --fix"
+    "lint:css": "stylelint 'src/**/*.{css,scss,vue}' --cache --fix"
   }
 }
 
@@ -277,9 +284,610 @@ npm install lint-staged --save-dev
   "lint:lint-staged": "lint-staged"
 }
 
-6. 根目录 .husky目录下pre-commit文件中的 npm 修改为：
+6. 根目录 .husky目录下pre-commit文件中的 npm 修改为(前提必须得已经git init或者git clone本地仓库与远程仓库关联，，否则不会走husky，因为husky需要git)：
 npm run lint:lint-staged
 
 7. 提交代码时，会自动执行lint-staged指令，检查代码格式和静态检查
 git add .
 git commit -m "test husky lint-staged"
+
+### commitlint git提交规范
+1. npm install --save-dev @commitlint/config-conventional @commitlint/cli
+
+2. 在项目根目录下创建commitlint.config.js文件,并写入以下内容：
+export default {
+  // 继承的规则
+  extends: ["@commitlint/config-conventional"],
+  // @see: https://commitlint.js.org/#/reference-rules
+  rules: {
+    "subject-case": [0], // subject大小写不做校验
+    // 类型枚举，git提交type必须是以下类型
+    "type-enum": [
+      // 当前验证的错误级别
+      2,
+      // 在什么情况下进行验证，always表示一直进行验证
+      "always",
+      [
+        "feat", // 新增功能
+        "fix", // 修复缺陷
+        "docs", // 文档变更
+        "style", // 代码格式（不影响功能，例如空格、分号等格式修正）
+        "refactor", // 代码重构（不包括 bug 修复、功能新增）
+        "perf", // 性能优化
+        "test", // 添加疏漏测试或已有测试改动
+        "build", // 构建流程、外部依赖变更（如升级 npm 包、修改 webpack 配置等）
+        "ci", // 修改 CI 配置、脚本
+        "revert", // 回滚 commit
+        "chore" // 对构建过程或辅助工具和库的更改（不影响源文件、测试用例）
+      ]
+    ]
+  }
+}
+
+3. 在.husky文件夹下创建commit-msg文件(如果用命令创建，要确保是utf-8编码，否则不会成功)并写入以下内容:
+npx --no -- commitlint --edit $1
+
+4. 提交代码时，会自动执行commitlint指令，检查代码提交规范
+正确的提交格式：<type>(<scope>): <subject> ，type 和 subject 默认必填
+git add .
+git commit -m "不规范的提交"
+git commit -m "feat:  规范的提交"
+
+### 统一包管理器工具下载依赖
+不同包管理工具下载同一个依赖，可能版本不一样,导致项目出现bug问题,所以要统一包管理工具
+1. npm i only-allow -D
+
+2. package.json中配置scripts命令,如果使用npm就传npm
+"scripts": {
+  ...,
+  "preinstall": "npx only-allow npm"
+}
+
+如果使用pnpm，就传pnpm
+"scripts": {
+  ...,
+  "preinstall": "npx only-allow pnpm"
+}
+
+如果使用pnpm，就传cnpm
+"scripts": {
+  ...,
+  "preinstall": "npx only-allow cnpm"
+}
+
+如果使用pnpm，就传yarn
+"scripts": {
+  ...,
+  "preinstall": "npx only-allow yarn"
+}
+
+### 文件设置路径别名配置
+1. 在vite.config.ts中配置resolve属性：
+
+import {defineConfig} from 'vite'
+import path from "path"
+export default defineConfig({
+  ...,
+  resolve: {
+    extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue", ".scss"], //导入时想要省略的扩展名列表。
+    alias: {
+      "@": path.resolve(__dirname, "./src") // 相对路径别名配置，使用 @ 代替 src
+    }
+  }
+})
+
+2. 在tsconfig.json中配置compilerOptions属性：
+{
+  "compilerOptions": {
+    "baseUrl": "./", // 解析非相对模块的基地址，默认是当前目录
+    "paths": { //路径映射，相对于baseUrl
+      "@/*": ["src/*"] 
+    }
+  }
+}
+
+### 导入时想要省略的扩展名列表
+import {defineConfig} from 'vite'
+import path from "path"
+export default defineConfig({
+  ...,
+  resolve: {
+    extensions: [".mjs", ".js", ".ts", ".jsx", ".tsx", ".json", ".vue", ".scss"] //导入时想要省略的扩展名列表。//导入时想要省略的扩展名列表。不 建议忽略自定义导入类型的扩展名（例如：.vue），因为它会影响 IDE 和类型支持, 默认[".mjs", ".js", ".ts", ".jsx", ".tsx", ".json"]
+  }
+})
+
+### base 配置开发或生产环境服务的公共基础路径
+import {defineConfig} from 'vite'
+import path from "path"
+export default defineConfig({
+  ...,
+  base: "/" //开发或生产环境服务的公共基础路径
+})
+
+### serve 本地服务端口、代理等配置
+export default defineConfig({
+  ...,
+  server: {
+    open: true, // 是否自动在浏览器打开
+    https: false, // 是否开启 https
+    host: "0.0.0.0", // 打开浏览器后是localhost地址，不是ip地址
+    port: 1011,//端口
+    proxy: {
+      // 以 /api 开头的请求，全部转发到 target 设置的地址
+      "/api": {
+        target: "http://192.168.169.242:7125/", //代理地址
+        changeOrigin: true, // 是否修改请求头中的host头为target地址域名
+        rewrite: (path) => path.replace(/^\/api/, "")
+      }
+    }
+  }
+})
+
+### env配置环境变量
+vite项目中可以使用import.meta.env来获取环境变量，但是在vite.config.ts中无法访问，其中的默认变量有:
+import.meta.env.MODE  {string} 应用运行的模式。
+import. meta.env.BASE_URL: {string} 部署应用时的基本 URL。他由base配置项决定。
+import. meta.env.PROD: {boolean} 应用是否运行在生产环境。
+import. meta.env.DEV: {boolean} 应用是否运行在开发环境 (永远与 import.meta.env.PROD相反)。
+import.meta.env.SSR: {boolean} 应用是否运行在 server 上。
+
+1. 如果想获取自定义的环境变量，需要在根目录下建 .env 文件，在 .env 文件中写上自定义的环境变量
+开发项目中至少会经历开发环境、测试环境和生产环境(即正式环境)三个阶段。不同阶段请求的状态(如接口地址等)不尽相同，若手动切换接口地址是相当繁琐且易出错的。于是环境变量配置的需求就应运而生，我们只需做简单的配置，把环境状态切换的工作交给代码
+
+2. 可以建三个文件，分别对应开发环境、测试环境和正式环境。env文件属于base文件，都会加载
+.env  无论npm run dev还是npm run build 或者指定mode 都会加载
+.env.development  npm run dev开发环境加载
+.env.production  npm run build生产环境加载
+.env.test  测试环境 可以通过命令行 --mode 选项来重写 npm run dev --mode test 或者 npm run build --mode test 来指定文件加载
+
+
+3. 为了防止意外地将一些环境变量泄漏到客户端，只有以 VITE_ 为前缀的变量才会暴露给经过 vite 处理的代码
+在上面的.env文件中加入变量:
+VITE_APP_BASE_API = "/api"
+
+4. 就可以在项目中获取变量 import.meta.env.VITE_APP_BASE_API
+
+
+5. 在vite.config.ts中访问环境变量需要使用vite中的loadEnv方法
+process.env可以获取默认的变量，但是无法获取自定义的环境变量
+loadEnv函数传两个参数，一个是mode，一个是process.cwd()，返回的是一个对象，对象中包含了所有环境变量
+
+import { defineConfig, loadEnv } from "vite"
+// 需要将defineConfig函数中的参数json改成函数，函数的参数中解析出来mode
+export default defineConfig(({ mode }) => {
+  console.log(process.env.NODE_ENV)
+  console.log(loadEnv(mode, process.cwd()))
+  return {
+    // 配置信息
+    ...
+  }
+})
+
+6. envDir配置
+我们现在的.env文件都是建立在根目录的，如果.env.XX的文件太多，会显得我们的项目目录很乱，所以可以将.env.XX文件放在统一的文件夹内，可以通过envDir配置来改变
+envDir用于加载 .env 文件的目录。可以是一个绝对路径，也可以是相对于项目根的路径。 默认是 envDir: "root"
+
+在根目录下新建env文件夹，将所有.env.XX文件放入env文件夹中
+配置envDir为"./env"
+配置之后，就可以在项目中使用import.meta.env.xxx获取环境变量
+
+在vite.config.ts中获取
+import { defineConfig, loadEnv } from "vite"
+import path from "path"
+export default defineConfig(({ mode }) => {
+  console.log(loadEnv(mode, path.resolve(__dirname, "./env"))) // 获取env的环境变量
+  return {
+    // 配置信息
+    ...,
+    envDir: "./env"
+  }
+})
+
+### 直接在script标签上定义name
+
+Vue3的setup语法糖是个好东西，但使用setup语法带来的第一个问题就是无法自定义name，而我们使用keep-alive往往是需要name的，解决这个问题通常是通过写两个script标签来解决，一个使用setup，一个不使用，但这样必然是不够优雅的。
+
+<script lang="ts">
+  import { defineComponent, onMounted } from 'vue'
+
+  export default defineComponent({
+    name: 'OrderList'
+  })
+  </script>
+
+  <script lang="ts" setup>
+  onMounted(() => {
+    console.log('mounted===')
+  })
+</script>
+
+这时候借助插件vite-plugin-vue-setup-extend可以让我们更优雅的解决这个问题，不用写两个script标签，可以直接在script标签上定义name。
+
+<script lang="ts" setup name="OrderList">
+  import { onMounted } from 'vue'
+
+  onMounted(() => {
+    console.log('mounted===')
+  })
+</script>
+
+1. npm install vite-plugin-vue-setup-extend -D
+
+2. 在vite.config.ts中配置插件
+import vueSetupExtend from 'vite-plugin-vue-setup-extend'
+export default defineConfig({
+  plugins: [
+    vueSetupExtend() // 可以直接在组件script标签上定义写name名称
+  ]
+})
+
+
+### 自动引入vue或者vue-router中的reactive\ref\computed\watch等方法
+unplugin-auto-import可以让script setup语法糖中的标签中自动引入reactive\ref\computed\watch等方法，不用再手动import {defineComponent,reactive,ref,toRefs,onBeforeMount,onMounted} from "vue"引入
+
+1. npm install unplugin-auto-import -D
+
+2. 在vite.config.js中配置插件
+import AutoImport from 'unplugin-auto-import/vite'
+export default defineConfig({
+  plugins: [
+    AutoImport({
+      imports:[
+        'vue',
+        'vue-router',
+        {
+          'vuex':['useStore']
+        }
+      ]
+    })
+  ]
+})
+
+3. 如果是js开发的话，配置以上后就可以使用，但是用ts开发的话，还得配置vite.config.ts以下属性
+import AutoImport from 'unplugin-auto-import/vite'
+export default defineConfig({
+  plugins: [
+    AutoImport({
+      dts: "auto-imports.d.ts", // 声明文件生成位置和文件名称,全局自动引入文件存放路径；不配置保存在根目录下；配置为false时将不会生成 auto-imports.d.ts 文件（不影响效果）
+      imports: [
+        "vue",
+        "vue-router",
+        {
+          vuex: ["useStore"]
+        }
+      ],
+      eslintrc: {
+        enabled: true,
+        filepath: "./.eslintrc-auto-import.json"
+      }
+    })
+  ]
+})
+
+eslintrc是用来解决eslint报错问题的配置项, 当enabled为true时，会根据filepath生成一个eslint的配置文件.eslintrc-auto-import.json, 然后一定要记得重新启动项目，这样才会生成这个配置文件
+需要注意的是，一旦生成配置文件之后，最好把enable关掉，即改成false。否则这个文件每次会在重新加载的时候重新生成，这会导致eslint有时会找不到这个文件。当需要更新配置文件的时候，再重新打开吧
+
+4. 生成.eslintrc-auto-import.json文件后配置eslint.config.js文件
+import fs from "fs"
+import path from "path"
+import url from "url"
+
+const filename = url.fileURLToPath(import.meta.url)
+const autoImportGlobals = JSON.parse(
+  fs.readFileSync(path.resolve(path.dirname(filename), "./.eslintrc-auto-import.json")).toString()
+)
+// 配置.eslintrc-auto-import.json文件到globals属性中
+{
+  languageOptions: {
+    globals: {
+      ...,
+      ...autoImportGlobals.globals
+    }
+  }
+}
+
+5. 在tsconfig.app.json文件中的include属性中添加配置auto-imports.d.ts文件,注意名字别写错了
+{
+  "include": [..., "auto-imports.d.ts"]
+}
+
+### SVG图标配置
+1. npm install vite-plugin-svg-icons -D
+
+2. 在main.ts入口文件中导入注册脚本
+import 'virtual:svg-icons-register'
+
+3. 在vite.config.ts中配置插件
+import { createSvgIconsPlugin } from "vite-plugin-svg-icons"
+export default defineConfig(({ mode }) => {
+  console.log(process.env.NODE_ENV)
+  console.log(loadEnv(mode, path.resolve(__dirname, "./env"))) // 获取env的环境变量
+  return {
+    plugins: [
+      ...,
+      // 配置svg图标
+      createSvgIconsPlugin({
+        // 指定需要缓存的图标文件夹
+        iconDirs: [path.resolve(process.cwd(), "src/assets/icons")],
+        // 指定symbolId格式
+        symbolId: "icon-[dir]-[name]"
+      })
+    ]
+  }
+})
+
+4. 在src/components/global目录下创建svgIcon.vue组件
+<!-- svgIcon -->
+<template>
+  <div>
+    <svg :style="{ width, height }">
+      <use :xlink:href="prefix + name"></use>
+    </svg>
+  </div>
+</template>
+
+<script setup lang="ts">
+<!-- svgIcon -->
+<template>
+  <div>
+    <svg :style="{ width, height }">
+      <use :xlink:href="prefix + name" :fill="color"></use>
+    </svg>
+  </div>
+</template>
+
+<script setup lang="ts">
+defineProps({
+  //svg宽度
+  width: {
+    type: String,
+    default: "16px"
+  },
+  //svg高度
+  height: {
+    type: String,
+    default: "16px"
+  },
+  //xlink:href属性值的前缀
+  prefix: {
+    type: String,
+    default: "#icon-"
+  },
+  //svg矢量图的名字
+  name: {
+    type: String,
+    default: ""
+  },
+  //svg矢量图的颜色
+  color: {
+    type: String,
+    default: ""
+  }
+})
+</script>
+<style lang="scss" scoped></style>
+
+6. 在main.ts入口文件中导入注册全局脚本
+import globalComponent from "./components/global/index"
+app.use(globalComponent)
+
+7. 使用svgicon组件
+<svgIcon name="caret_down" />
+
+### mock数据配置
+1. npm install mockjs vite-plugin-mock -D
+
+2. 在vite.config.ts中配置插件
+import { viteMockServe } from "vite-plugin-mock"
+export default defineConfig(({ command }) => {
+  return {
+    plugins: [
+      ...,
+      // 配置svg图标
+      viteMockServe({
+        // default
+        mockPath: "mock",
+        enable: command === "serve" // 开发环境开启mock
+      })
+    ]
+  }
+})
+
+3. 在项目根目录下新建一个mock目录，在mock目录下新建一个index.ts文件(也可以是别的文件名)
+文件中导出一个数据，数组中有接口的信息
+export default [
+  // 用户登录接口
+  {
+    url: "/api/user/login", //请求地址
+    method: "post", //请求方式
+    response: ({ body }) => {
+      //获取请求体携带过来的用户名与密码
+      const { username, password } = body
+      //调用获取用户信息函数,用于判断是否有此用户
+      const checkUser = createUserList().find(
+        (item) => item.username === username && item.password === password
+      )
+      //没有用户返回失败信息
+      if (!checkUser) {
+        return { code: 201, data: { message: "账号或者密码不正确" } }
+      }
+      //如果有返回成功信息
+      const { token } = checkUser
+      return { code: 200, data: { token } }
+    }
+  },
+  // 获取用户信息
+  {
+    url: "/api/user/info",
+    method: "get",
+    response: (request) => {
+      //获取请求头携带token
+      const token = request.headers.token
+      //查看用户信息是否包含有次token用户
+      const checkUser = createUserList().find((item) => item.token === token)
+      //没有返回失败的信息
+      if (!checkUser) {
+        return { code: 201, data: { message: "获取用户信息失败" } }
+      }
+      //如果有返回成功信息
+      return { code: 200, data: { checkUser } }
+    }
+  }
+]
+
+### vue路由的配置
+
+1. 在src/router/modules/base.ts中配置路由地址和对应信息组件
+const route = [
+  {
+    path: "/",
+    name: "首页",
+    alias: "/index",
+    component: () => import("@/views/base/home.vue")
+  },
+  {
+    path: "/404",
+    name: "404",
+    component: () => import("@/views/error/notFound.vue")
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    redirect: "/404"
+  }
+]
+export default route
+
+2. 在src/router/index.ts中配置路由
+import { createRouter, createWebHashHistory } from "vue-router"
+import base from "./modules/base"
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [...base]
+})
+export default router
+
+3. 在main.ts入口文件中导入路由
+import router from "./router"
+app.use(router)
+
+4. 建立路由对应的文件src/views/base/home.vue
+
+5. 在src/App.vue中添加渲染路由组件容器
+<template>
+  <router-view />
+</template>
+
+### axios的请求和响应拦截配置二次封装
+在src/utils/request.ts中添加以下代码
+
+import axios from "axios"
+import { ElMessage } from "element-plus"
+// 创建axios实例
+const request = axios.create({
+  baseURL: "/",
+  timeout: 5000
+})
+
+// 添加请求拦截器
+request.interceptors.request.use((config) => {
+  // 在发送请求之前做些什么
+  return config
+})
+
+// 添加响应拦截器
+request.interceptors.response.use(
+  (response) => {
+    // 成功的响应回调函数
+    return response.data
+  },
+  (error) => {
+    // 失败的响应回调函数
+    // 处理http网络错误的
+    let msg = ""
+    const status = error.response.status
+    switch (status) {
+      case 401:
+        msg = "token过期"
+        break
+      case 403:
+        msg = "无权访问"
+        break
+      case 404:
+        msg = "请求地址错误"
+        break
+      case 500:
+        msg = "服务器出现问题"
+        break
+      default:
+        msg = "无网络"
+    }
+    // 提示错误信息
+    ElMessage({
+      type: "error",
+      message: msg
+    })
+    return Promise.reject(error)
+  }
+)
+export default request
+
+### API接口统一管理
+在开发项目的时候,接口可能很多需要统一管理。在src目录下去创建api文件夹去统一管理项目的接口
+
+api/user/type.ts文件代码：
+// 登录接口的参数类型
+export interface loginForm {
+  usernmae: string
+  password: string
+}
+
+interface dataType {
+  token: string
+}
+
+// 登录接口返回的参数类型
+export interface loginReseponseData {
+  code: number
+  data: dataType
+}
+
+interface userInfo {
+  userId: number
+  avatar: string
+  username: string
+  password: string
+  desc: string
+  roles: string[]
+  buttons: string[]
+  routes: string[]
+  token: string
+}
+
+interface user {
+  checkUser: userInfo
+}
+
+// 返回用户信息接口的数据类型
+export interface userReseponseData {
+  code: number
+  data: user
+}
+
+
+api/user/index.ts文件代码：
+
+import request from "@utils/request"
+import { loginForm, loginReseponseData, userReseponseData } from "./type"
+
+enum api {
+  login = "/user/login",
+  userinfo = "/user/info"
+}
+// 登录接口
+export const login = (data: loginForm) => request.post<any, loginReseponseData>(api.login, data)
+// 获取用户信息接口
+export const getUserInfo = () => request.get<any, userReseponseData>(api.userinfo)
+
+
+
+
